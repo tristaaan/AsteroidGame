@@ -6,6 +6,11 @@ const aster_size = 5
 var grid = []
 var tris = []
 
+var reset = false
+var start_angle = 0
+var start_pos = Vector2(0, 0)
+var start_speed = Vector2(0, 0)
+var start_rot = 0
 
 enum {UP=0, RIGHT=1, DOWN=2, LEFT=3}
 
@@ -13,10 +18,16 @@ enum {UP=0, RIGHT=1, DOWN=2, LEFT=3}
 func _ready():
 	$Triangle.hide()
 	$Triangle.disabled = true
+	$TriangleFlip.hide()
+	$TriangleFlip.disabled = true
 	init_grid()
 
 func _integrate_forces(state):
-	pass
+	if reset:
+		state.transform = Transform2D(start_angle, start_pos)
+		state.linear_velocity = start_speed
+		state.angular_velocity = start_rot
+		reset = false
 
 func _draw():
 	for t in tris:
@@ -99,24 +110,31 @@ func draw_asteroid():
 				var com = draw_triangle_at_centroid(i,j)
 				center_of_mass_sum += com
 				count += 1
-
-#	self.transform.origin = (center_of_mass_sum / count)
-	draw_circle(self.transform.origin, 5.0, Color("#ff00cc"))
+		print(grid[i])
+		
+	var center_of_mass = (center_of_mass_sum / count)
+	self.transform.origin = center_of_mass
+	self.position = Vector2.ZERO
 	for tri in tris:
+		tri.position -= center_of_mass
+		draw_circle(tri.position, 5.0, Color("#00ff00"))
 		tri.disabled = false
+		tri.show()
+		add_child(tri)
+	draw_circle(self.transform.origin, 5.0, Color("#ff00cc"))
+#	self.transform.origin = Vector2(0,0)
 	
 func draw_triangle_at_centroid(y,x):
 	var flip = (y % 2 == 0 and x % 2 == 1) || (y % 2 == 1 and x % 2 == 0)
 	var pX = x * 25
 	var pY = y * 25 * sqrt(3)
-	var tri = $Triangle.duplicate()
+	var tri
 	if flip:
-		tri.scale.y = -1
+		tri = $TriangleFlip.duplicate()
 		pY += 25 * sqrt(3)
-#	tri.transform.origin = Vector2(pX, pY)
-	tri.show()
-	add_child(tri)
-	draw_circle(tri.transform.origin, 5.0, Color("#00ff00"))
+	else:
+		tri = $Triangle.duplicate()		
+	tri.position = Vector2(pX, pY)
 	tris.append(tri)
 	
 	var ret
@@ -124,5 +142,4 @@ func draw_triangle_at_centroid(y,x):
 		ret = Vector2(pX, pY - 25 * sqrt(3) + ((25 * sqrt(3)) / 2) - 5)
 	else: 
 		ret = Vector2(pX, pY + (25 * sqrt(3)) / 2 + 5)
-#	draw_circle(ret, 5.0, Color("#ff0000"))
 	return ret

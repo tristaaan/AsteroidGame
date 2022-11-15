@@ -8,11 +8,15 @@ var rng = RandomNumberGenerator.new()
 func spawn(spawn_global_position, velocity = null):
 	var instance = asteroid_scene.instance()
 	if velocity == null:
-		instance.apply_central_impulse(
+		instance.start_speed = Vector2(
 			rng.randf_range(-speed_bounds, speed_bounds),
 			rng.randf_range(-speed_bounds, speed_bounds)
 		)
 	else:
-		instance.apply_central_impulse(velocity)
+		instance.start_speed = velocity
+#	instance.start_rot = 1.0
+	instance.start_pos = spawn_global_position
 	instance.global_position = spawn_global_position
+	instance.transform.origin = spawn_global_position
 	add_child(instance)
+	instance.reset = true
