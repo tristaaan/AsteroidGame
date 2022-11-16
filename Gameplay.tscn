@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://Gameplay.gd" type="Script" id=1]
 [ext_resource path="res://AsteroidFactory.gd" type="Script" id=2]
+[ext_resource path="res://triangle.svg" type="Texture" id=3]
+[ext_resource path="res://Character.gd" type="Script" id=4]
 
 [node name="Gameplay" type="Node2D"]
 script = ExtResource( 1 )
@@ -12,3 +14,13 @@ current = true
 
 [node name="AsteroidFactory" type="Node2D" parent="."]
 script = ExtResource( 2 )
+
+[node name="Character" type="Area2D" parent="."]
+position = Vector2( 518, 521 )
+script = ExtResource( 4 )
+
+[node name="Sprite" type="Sprite" parent="Character"]
+texture = ExtResource( 3 )
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="Character"]
+polygon = PoolVector2Array( 0, -20, -23, 21, 23, 21 )

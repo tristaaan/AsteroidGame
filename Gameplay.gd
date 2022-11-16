@@ -9,8 +9,8 @@ func _ready():
 func setup_asteroid_field():
 	var screen_size = self.get_viewport().get_visible_rect().size
 	
-	spawn_asteroid_at(100, 250, Vector2(0, 0))
-	spawn_asteroid_at(400, 250, Vector2(0.0, 0))
+	spawn_asteroid_at(100, 250, Vector2(30, 0))
+	spawn_asteroid_at(400, 250, Vector2(-25.0, 0))
 
 func spawn_asteroid_at(x, y, velocity = null):
 	$AsteroidFactory.spawn(Vector2(x,y), velocity)

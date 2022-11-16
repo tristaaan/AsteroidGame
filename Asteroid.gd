@@ -110,7 +110,7 @@ func draw_asteroid():
 				var com = draw_triangle_at_centroid(i,j)
 				center_of_mass_sum += com
 				count += 1
-		print(grid[i])
+		#print(grid[i])
 		
 	var center_of_mass = (center_of_mass_sum / count)
 	self.transform.origin = center_of_mass

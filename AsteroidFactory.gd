@@ -14,7 +14,7 @@ func spawn(spawn_global_position, velocity = null):
 		)
 	else:
 		instance.start_speed = velocity
-#	instance.start_rot = 1.0
+	instance.start_rot = rng.randf_range(-2, 2)
 	instance.start_pos = spawn_global_position
 	instance.global_position = spawn_global_position
 	instance.transform.origin = spawn_global_position
