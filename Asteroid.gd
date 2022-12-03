@@ -36,10 +36,11 @@ func _draw():
 	draw_asteroid()
 	
 func _unhandled_input(event):
-	if event.is_action_pressed("ui_accept"):
-		init_grid()
-		update()
-		draw_asteroid()
+	pass
+#	if event.is_action_pressed("ui_accept"):
+#		init_grid()
+#		update()
+#		draw_asteroid()
 
 func init_grid():
 	grid = []
@@ -133,7 +134,9 @@ func draw_triangle_at_centroid(y,x):
 		tri = $TriangleFlip.duplicate()
 		pY += 25 * sqrt(3)
 	else:
-		tri = $Triangle.duplicate()		
+		tri = $Triangle.duplicate()
+	tri.array_coordinate = Vector2(x,y)
+	tri.connect("hit", self, "hit_registered")
 	tri.position = Vector2(pX, pY)
 	tris.append(tri)
 	
@@ -143,3 +146,6 @@ func draw_triangle_at_centroid(y,x):
 	else: 
 		ret = Vector2(pX, pY + (25 * sqrt(3)) / 2 + 5)
 	return ret
+
+func hit_registered(array_coordinate):
+	print(array_coordinate)
