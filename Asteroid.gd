@@ -5,12 +5,15 @@ const aster_size = 5
 
 var grid = []
 var tris = []
+var coord_map = {}
 
 var reset = false
 var start_angle = 0
 var start_pos = Vector2(0, 0)
 var start_speed = Vector2(0, 0)
 var start_rot = 0
+
+var DEBUG = true
 
 enum {UP=0, RIGHT=1, DOWN=2, LEFT=3}
 
@@ -33,6 +36,7 @@ func _draw():
 	for t in tris:
 		t.queue_free()
 	tris = []
+	coord_map = {}
 	draw_asteroid()
 	
 func _unhandled_input(event):
@@ -118,11 +122,13 @@ func draw_asteroid():
 	self.position = Vector2.ZERO
 	for tri in tris:
 		tri.position -= center_of_mass
-		draw_circle(tri.position, 5.0, Color("#00ff00"))
+		if DEBUG:
+			draw_circle(tri.position, 5.0, Color("#00ff00"))
 		tri.disabled = false
 		tri.show()
 		add_child(tri)
-	draw_circle(self.transform.origin, 5.0, Color("#ff00cc"))
+	if DEBUG:
+		draw_circle(self.transform.origin, 5.0, Color("#ff00cc"))
 #	self.transform.origin = Vector2(0,0)
 	
 func draw_triangle_at_centroid(y,x):
@@ -139,6 +145,7 @@ func draw_triangle_at_centroid(y,x):
 	tri.connect("hit", self, "hit_registered")
 	tri.position = Vector2(pX, pY)
 	tris.append(tri)
+	coord_map[Vector2(x,y)] = tri
 	
 	var ret
 	if flip:
@@ -148,4 +155,26 @@ func draw_triangle_at_centroid(y,x):
 	return ret
 
 func hit_registered(array_coordinate):
-	print(array_coordinate)
+	var tri:Triangle = coord_map[array_coordinate]
+	tri.set_strength(tri.get_strength() - 2)
+	print(array_coordinate, tri.get_strength())
+	if tri.get_strength() <= 0:
+		# destroy tri
+		remove_child(tri)
+		grid[array_coordinate.y][array_coordinate.x] = false
+		var tmp_start_pos = self.global_position
+		self.start_pos = tmp_start_pos
+		self.reset = true
+		update()
+		if all_destroyed():
+			self.queue_free()
+			if DEBUG:
+				print('asteroid all destroyed')
+	print(grid)
+		
+func all_destroyed():
+	for i in size:
+		for j in size:
+			if grid[i][j]:
+				return false
+	return true

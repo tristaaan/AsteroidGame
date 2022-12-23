@@ -8,6 +8,16 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "CollisionPolygon2D",
+"class": "Triangle",
+"language": "GDScript",
+"path": "res://Triangle.gd"
+} ]
+_global_script_class_icons={
+"Triangle": ""
+}
+
 [application]
 
 config/name="AsteroidTest"
