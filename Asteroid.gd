@@ -6,6 +6,7 @@ const aster_size = 5
 var grid = []
 var tris = []
 var coord_map = {}
+var graph = {}
 
 var reset = false
 var start_angle = 0
@@ -46,6 +47,30 @@ func _unhandled_input(event):
 #		update()
 #		draw_asteroid()
 
+func get_possible_directions(posX, posY):
+	var possible_dirs = []
+	var oddX = posX % 2 == 1
+	var oddY = posY % 2 == 1
+	# vertical
+	if !oddY and oddX || oddY and !oddX:
+		# no down
+		if posY > 0:
+			possible_dirs.append(UP)
+	elif oddY and oddX || !oddY and !oddX:
+		# no up
+		if posY < size - 1:
+			possible_dirs.append(DOWN)
+
+	# horizontal
+	if posX == 0:
+		possible_dirs.append(RIGHT)
+	elif posX == size - 1:
+		possible_dirs.append(LEFT)
+	else:
+		possible_dirs.append(LEFT)
+		possible_dirs.append(RIGHT)
+	return possible_dirs 
+	
 func init_grid():
 	grid = []
 	# init the grid with null
@@ -61,34 +86,16 @@ func init_grid():
 	var mass_sum = 1
 	
 	grid[posY][posX] = true
+	graph[Vector2(posY, posX)] = []
 	for i in aster_size:
-		var possible_dirs = []
-		var oddX = posX % 2 == 1
-		var oddY = posY % 2 == 1
-		# vertical
-		if !oddY and oddX || oddY and !oddX:
-			# no down
-			if posY > 0:
-				possible_dirs.append(UP)
-		elif oddY and oddX || !oddY and !oddX:
-			# no up
-			if posY < size - 1:
-				possible_dirs.append(DOWN)
 
-		# horizontal
-		if posX == 0:
-			possible_dirs.append(RIGHT)
-		elif posX == size - 1:
-			possible_dirs.append(LEFT)
-		else:
-			possible_dirs.append(LEFT)
-			possible_dirs.append(RIGHT)
-		
+		var possible_dirs = get_possible_directions(posX, posY)
 		if len(possible_dirs) == 0:
 			print("grid filled early")
 			break
 		
 		var dir = possible_dirs[randi() % len(possible_dirs)]
+		var prev_coord = Vector2(posY, posX)
 		match dir:
 			UP:
 				posY -= 1
@@ -99,10 +106,35 @@ func init_grid():
 			LEFT:
 				posX -= 1
 		grid[posY][posX] = true
+		
+		var adjacents = []
+		possible_dirs = get_possible_directions(posX, posY)
+		for pdir in possible_dirs:
+			match pdir:
+				UP:
+					if grid[posY - 1][posX]:
+						adjacents.append(Vector2(posY - 1, posX))
+				RIGHT: 
+					if grid[posY][posX + 1]:
+						adjacents.append(Vector2(posY, posX + 1))
+				DOWN: 
+					if grid[posY + 1][posX]:
+						adjacents.append(Vector2(posY + 1,posX))
+				LEFT:
+					if grid[posY][posX - 1]:
+						adjacents.append(Vector2(posY, posX - 1))
+		
+		# add reference to graph
+		var cur_coord = Vector2(posY, posX)
+		graph[cur_coord] = adjacents
+		for adj in adjacents:
+			if not graph[adj].has(cur_coord):
+				graph[adj].append(cur_coord)
 		mass_sum += 1
+		if DEBUG:
+			print(graph)
 		
 	self.mass = mass_sum
-		
 #	for row in grid:
 #		print(row)
 
@@ -131,7 +163,7 @@ func draw_asteroid():
 		draw_circle(self.transform.origin, 5.0, Color("#ff00cc"))
 #	self.transform.origin = Vector2(0,0)
 	
-func draw_triangle_at_centroid(y,x):
+func draw_triangle_at_centroid(y, x):
 	var flip = (y % 2 == 0 and x % 2 == 1) || (y % 2 == 1 and x % 2 == 0)
 	var pX = x * 25
 	var pY = y * 25 * sqrt(3)
@@ -154,23 +186,35 @@ func draw_triangle_at_centroid(y,x):
 		ret = Vector2(pX, pY + (25 * sqrt(3)) / 2 + 5)
 	return ret
 
+func vec_compare(vec_a, vec_b):
+	return vec_a.x == vec_b.x and vec_a.y == vec_b.y
+
 func hit_registered(array_coordinate):
 	var tri:Triangle = coord_map[array_coordinate]
+	var norm_coord = Vector2(array_coordinate.y, array_coordinate.x)
 	tri.set_strength(tri.get_strength() - 2)
 	print(array_coordinate, tri.get_strength())
 	if tri.get_strength() <= 0:
 		# destroy tri
 		remove_child(tri)
 		grid[array_coordinate.y][array_coordinate.x] = false
-		var tmp_start_pos = self.global_position
-		self.start_pos = tmp_start_pos
-		self.reset = true
-		update()
+		
+		# update graph
+		for coord in graph[norm_coord]:
+			var index = graph[coord].bsearch_custom(norm_coord, self, "vec_compare", false)
+			graph[coord].remove(index)
+		graph[norm_coord] = null
+		
+#		var tmp_start_pos = self.global_position
+#		self.start_pos = tmp_start_pos
+#		self.reset = true
+#		update()
+
+		# delete entire asteroid if necessary 
 		if all_destroyed():
 			self.queue_free()
 			if DEBUG:
 				print('asteroid all destroyed')
-	print(grid)
 		
 func all_destroyed():
 	for i in size:
