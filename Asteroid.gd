@@ -193,7 +193,8 @@ func hit_registered(array_coordinate):
 	var tri:Triangle = coord_map[array_coordinate]
 	var norm_coord = Vector2(array_coordinate.y, array_coordinate.x)
 	tri.set_strength(tri.get_strength() - 2)
-	print(array_coordinate, tri.get_strength())
+	if DEBUG:
+		print(array_coordinate, tri.get_strength())
 	if tri.get_strength() <= 0:
 		# destroy tri
 		remove_child(tri)
@@ -203,8 +204,21 @@ func hit_registered(array_coordinate):
 		for coord in graph[norm_coord]:
 			var index = graph[coord].bsearch_custom(norm_coord, self, "vec_compare", false)
 			graph[coord].remove(index)
-		graph[norm_coord] = null
+		if len(graph[norm_coord]) > 0:
+			var rand_start = graph[norm_coord][randi() % len(graph[norm_coord])]
+			graph.erase(norm_coord)
 		
+			# find out if there was a split by traversing the random neighbor of the removed node
+			if is_split(rand_start):
+				if DEBUG:
+					print("multi-components!")
+				# get the two components and pass them to new asteroids with similar parameters
+				# pass signal to asteroid factory that does this?
+				
+#		# Lone tri
+#		else:
+#			print("no neighbors at ", norm_coord)
+
 #		var tmp_start_pos = self.global_position
 #		self.start_pos = tmp_start_pos
 #		self.reset = true
@@ -215,6 +229,22 @@ func hit_registered(array_coordinate):
 			self.queue_free()
 			if DEBUG:
 				print('asteroid all destroyed')
+		
+func is_split(start):
+	var q_front = graph[start]
+	var visited = [start]
+	var neighbors = []
+	while q_front.size() > 0:
+		var front = q_front.pop_front()
+		# return the depth if it is the end key
+		neighbors = graph[front]
+		for n in neighbors: 
+			if n != null and not visited.has(n):
+				q_front.append(n)
+		visited.append(front)
+	if DEBUG:
+		print("visited: ", len(visited), ', tris: ', len(graph))
+	return len(visited) != len(graph)
 		
 func all_destroyed():
 	for i in size:
