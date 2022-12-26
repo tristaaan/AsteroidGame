@@ -3,7 +3,7 @@ extends CollisionPolygon2D
 signal hit(at_array_coordinate)
 
 var array_coordinate
-var initial_str:float = 10.0 setget set_initial_strength
+var initial_str:float = 4.0 setget set_initial_strength
 var strength:float = initial_str setget set_strength, get_strength
 
 class_name Triangle

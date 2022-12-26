@@ -3,6 +3,8 @@ extends RigidBody2D
 const size = 5
 const aster_size = 5
 
+signal asteroid_break(new_components)
+
 var grid = []
 var tris = []
 var coord_map = {}
@@ -186,51 +188,49 @@ func draw_triangle_at_centroid(y, x):
 		ret = Vector2(pX, pY + (25 * sqrt(3)) / 2 + 5)
 	return ret
 
-func vec_compare(vec_a, vec_b):
-	return vec_a.x == vec_b.x and vec_a.y == vec_b.y
-
 func hit_registered(array_coordinate):
 	var tri:Triangle = coord_map[array_coordinate]
-	var norm_coord = Vector2(array_coordinate.y, array_coordinate.x)
+	var hit_coord = Vector2(array_coordinate.y, array_coordinate.x)
 	tri.set_strength(tri.get_strength() - 2)
 	if DEBUG:
-		print(array_coordinate, tri.get_strength())
+		print(hit_coord, ", strength: ", tri.get_strength())
+	
 	if tri.get_strength() <= 0:
 		# destroy tri
 		remove_child(tri)
 		grid[array_coordinate.y][array_coordinate.x] = false
 		
-		# update graph
-		for coord in graph[norm_coord]:
-			var index = graph[coord].bsearch_custom(norm_coord, self, "vec_compare", false)
+		# remove destroyed node from graph
+		print(graph)
+		for coord in graph[hit_coord]:
+			var index = graph[coord].find(hit_coord)
 			graph[coord].remove(index)
-		if len(graph[norm_coord]) > 0:
-			var rand_start = graph[norm_coord][randi() % len(graph[norm_coord])]
-			graph.erase(norm_coord)
 		
-			# find out if there was a split by traversing the random neighbor of the removed node
-			if is_split(rand_start):
+		match len(graph[hit_coord]):
+			2:
+				# there could be 2 components from this unless the asteroid loops
+				var neighbors = graph[hit_coord]
+				graph.erase(hit_coord)
+				var components = []
+				for n in neighbors:
+					components.append(get_component(n))
+					
+				if not components[0].has(components[1][0]):
+					emit_signal("asteroid_break", components)
+			1: 
+				graph.erase(hit_coord)
+			0:
+				# Lone tri
+				self.queue_free()
 				if DEBUG:
-					print("multi-components!")
-				# get the two components and pass them to new asteroids with similar parameters
-				# pass signal to asteroid factory that does this?
-				
-#		# Lone tri
-#		else:
-#			print("no neighbors at ", norm_coord)
+					print('asteroid all destroyed')
 
 #		var tmp_start_pos = self.global_position
 #		self.start_pos = tmp_start_pos
 #		self.reset = true
 #		update()
 
-		# delete entire asteroid if necessary 
-		if all_destroyed():
-			self.queue_free()
-			if DEBUG:
-				print('asteroid all destroyed')
-		
-func is_split(start):
+func get_component(start):
 	var q_front = graph[start]
 	var visited = [start]
 	var neighbors = []
@@ -239,16 +239,9 @@ func is_split(start):
 		# return the depth if it is the end key
 		neighbors = graph[front]
 		for n in neighbors: 
-			if n != null and not visited.has(n):
+			if not visited.has(n):
 				q_front.append(n)
 		visited.append(front)
-	if DEBUG:
-		print("visited: ", len(visited), ', tris: ', len(graph))
-	return len(visited) != len(graph)
-		
-func all_destroyed():
-	for i in size:
-		for j in size:
-			if grid[i][j]:
-				return false
-	return true
+
+	return visited
+	

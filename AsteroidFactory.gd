@@ -24,5 +24,9 @@ func spawn(spawn_global_position, velocity = null, rot_velocity = null):
 	instance.start_pos = spawn_global_position
 	instance.global_position = spawn_global_position
 	instance.transform.origin = spawn_global_position
+	instance.connect("asteroid_break", self, "asteroid_did_break")
 	add_child(instance)
 	instance.reset = true
+	
+func asteroid_did_break(components):
+	print("factory detect broken", components)
