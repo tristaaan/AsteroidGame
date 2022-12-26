@@ -7,6 +7,8 @@ var rng = RandomNumberGenerator.new()
 
 func spawn(spawn_global_position, velocity = null, rot_velocity = null):
 	var instance = asteroid_scene.instance()
+	instance.init_grid()
+	
 	# set velocity vector
 	if velocity == null:
 		instance.start_speed = Vector2(
@@ -28,5 +30,12 @@ func spawn(spawn_global_position, velocity = null, rot_velocity = null):
 	add_child(instance)
 	instance.reset = true
 	
-func asteroid_did_break(components):
+func asteroid_did_break(components, offset):
 	print("factory detect broken", components)
+	for c in components: 
+		var instance = asteroid_scene.instance()
+		instance.init(c)
+		instance.start_pos = offset
+		instance.connect("asteroid_break", self, "asteroid_did_break")
+		add_child(instance)
+		instance.reset = true

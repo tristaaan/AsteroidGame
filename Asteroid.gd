@@ -26,7 +26,6 @@ func _ready():
 	$Triangle.disabled = true
 	$TriangleFlip.hide()
 	$TriangleFlip.disabled = true
-	init_grid()
 
 func _integrate_forces(state):
 	if reset:
@@ -48,6 +47,13 @@ func _unhandled_input(event):
 #		init_grid()
 #		update()
 #		draw_asteroid()
+
+func init(starter_graph):
+	graph = starter_graph
+	grid = empty_grid()
+	for k in graph.keys():
+		grid[k.x][k.y] = true
+		self.mass += 1
 
 func get_possible_directions(posX, posY):
 	var possible_dirs = []
@@ -73,15 +79,19 @@ func get_possible_directions(posX, posY):
 		possible_dirs.append(RIGHT)
 	return possible_dirs 
 	
-func init_grid():
-	grid = []
-	# init the grid with null
+func empty_grid():
+	var ret = []
 	for i in size:
 		var row = []
 		for j in size:
 			row.append(false)
-		grid.append(row)
-	
+		ret.append(row)
+	return ret
+
+func init_grid():
+	# init the grid with false
+	grid = empty_grid()
+
 	# random walk the grid 
 	var posX = randi() % size
 	var posY = randi() % size
@@ -191,6 +201,7 @@ func draw_triangle_at_centroid(y, x):
 func hit_registered(array_coordinate):
 	var tri:Triangle = coord_map[array_coordinate]
 	var hit_coord = Vector2(array_coordinate.y, array_coordinate.x)
+	var global_hit_coord = tri.global_position
 	tri.set_strength(tri.get_strength() - 2)
 	if DEBUG:
 		print(hit_coord, ", strength: ", tri.get_strength())
@@ -216,7 +227,14 @@ func hit_registered(array_coordinate):
 					components.append(get_component(n))
 					
 				if not components[0].has(components[1][0]):
-					emit_signal("asteroid_break", components)
+					var	graphs = []
+					for coords in components:
+						var component_graph = {}
+						for coord in coords:
+							component_graph[coord] = graph[coord]
+						graphs.append(component_graph)
+					emit_signal("asteroid_break", graphs, global_hit_coord)
+					self.queue_free()
 			1: 
 				graph.erase(hit_coord)
 			0:
