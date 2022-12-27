@@ -186,12 +186,7 @@ func draw_triangle_at_centroid(y, x):
 	tris.append(tri)
 	coord_map[Vector2(x,y)] = tri
 	
-	var ret
-	if flip:
-		ret = Vector2(pX, pY - 25 * sqrt(3) + ((25 * sqrt(3)) / 2) - 5)
-	else: 
-		ret = Vector2(pX, pY + (25 * sqrt(3)) / 2 + 5)
-	return ret
+	return Vector2(pX, pY)
 
 func hit_registered(array_coordinate):
 	var tri:Triangle = coord_map[array_coordinate]
@@ -260,8 +255,6 @@ func calulate_component_global_center(component):
 	for c in component.keys():
 		com += coord_map[yx2xy(c)].global_position
 	
-	# the offset has to do with the grid coordinate?
-	print(component, com / len(component))
 	return com / len(component) 
 	
 func get_component(start):
