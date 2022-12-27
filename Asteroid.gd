@@ -185,7 +185,6 @@ func draw_triangle_at_centroid(y, x):
 	var tri
 	if flip:
 		tri = $TriangleFlip.duplicate()
-		tri.is_flip = true
 		pY += 25 * sqrt(3)
 	else:
 		tri = $Triangle.duplicate()
@@ -195,7 +194,12 @@ func draw_triangle_at_centroid(y, x):
 	tris.append(tri)
 	coord_map[Vector2(x,y)] = tri
 	
-	return Vector2(pX, pY)
+	var ret
+	if flip:
+		ret = Vector2(pX, pY - 25 * sqrt(3) + ((25 * sqrt(3)) / 2) - 5)
+	else: 
+		ret = Vector2(pX, pY + (25 * sqrt(3)) / 2 + 5)
+	return ret
 
 func hit_registered(array_coordinate):
 	var tri:Triangle = coord_map[array_coordinate]
