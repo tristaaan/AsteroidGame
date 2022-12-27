@@ -10,11 +10,16 @@ var tris = []
 var coord_map = {}
 var graph = {}
 
+# variables and flags to setup
 var reset = false
 var start_angle = 0
 var start_pos = Vector2(0, 0)
 var start_speed = Vector2(0, 0)
 var start_rot = 0
+
+var explosion = false
+var explosion_velocity = null
+var explosion_origin = null
 
 var DEBUG = true
 
@@ -33,6 +38,10 @@ func _integrate_forces(state):
 		state.linear_velocity = start_speed
 		state.angular_velocity = start_rot
 		reset = false
+		
+	if explosion:
+		self.apply_impulse(explosion_origin, explosion_velocity)
+		explosion = false
 
 func _draw():
 	for t in tris:
@@ -191,6 +200,7 @@ func draw_triangle_at_centroid(y, x):
 func hit_registered(array_coordinate):
 	var tri:Triangle = coord_map[array_coordinate]
 	var hit_coord = Vector2(array_coordinate.y, array_coordinate.x)
+	var global_hit_coord = tri.global_position
 	tri.set_strength(tri.get_strength() - 2)
 	
 	if tri.get_strength() <= 0:
@@ -233,15 +243,18 @@ func hit_registered(array_coordinate):
 						component_positions,
 						rotation,
 						self.linear_velocity,
-						self.angular_velocity
+						self.angular_velocity,
+						global_hit_coord
 					)
 					tri.queue_free()
 					self.queue_free()
 			1: 
 				tri.queue_free()
 				graph.erase(hit_coord)
+				var new_com = calulate_component_global_center(graph)
+				self.transform.origin = new_com
 			0:
-				# Lone tri
+				# Lone tri was destroyed
 				self.queue_free()
 				if DEBUG:
 					print('asteroid all destroyed')

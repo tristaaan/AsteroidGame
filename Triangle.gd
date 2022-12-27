@@ -35,8 +35,7 @@ func get_strength():
 
 func set_is_flip(newVal):
 	is_flip = newVal
-	var size = 25
 	if is_flip:
-		self.transform.origin -= Vector2(0, 25 * sqrt(3) / 2)
+		self.transform.origin += Vector2(0, 25 * sqrt(3))
 	else:
-		self.transform.origin -= Vector2(0, 25 * sqrt(3) / 2)
+		self.transform.origin -= Vector2(0, 25 * sqrt(3))
