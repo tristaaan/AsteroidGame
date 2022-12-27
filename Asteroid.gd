@@ -1,7 +1,7 @@
 extends RigidBody2D
 
 const size = 5
-const aster_size = 5
+const aster_size = 8
 
 signal asteroid_break(new_components)
 
@@ -53,7 +53,7 @@ func init(starter_graph):
 	grid = empty_grid()
 	for k in graph.keys():
 		grid[k.x][k.y] = true
-		self.mass += 1
+	self.mass = len(graph)
 
 func get_possible_directions(posX, posY):
 	var possible_dirs = []
@@ -147,21 +147,15 @@ func init_grid():
 			print(graph)
 		
 	self.mass = mass_sum
-#	for row in grid:
-#		print(row)
 
 func draw_asteroid():
 	var center_of_mass_sum = Vector2(0,0)
-	var count = 0
-	for i in size:
-		for j in size:
-			if grid[i][j]:
-				var com = draw_triangle_at_centroid(i,j)
-				center_of_mass_sum += com
-				count += 1
-		#print(grid[i])
+
+	for t in graph.keys():
+		var com = draw_triangle_at_centroid(int(t.x), int(t.y))
+		center_of_mass_sum += com
 		
-	var center_of_mass = (center_of_mass_sum / count)
+	var center_of_mass = (center_of_mass_sum / len(graph))
 	self.transform.origin = center_of_mass
 	self.position = Vector2.ZERO
 	for tri in tris:
@@ -182,6 +176,7 @@ func draw_triangle_at_centroid(y, x):
 	var tri
 	if flip:
 		tri = $TriangleFlip.duplicate()
+		tri.is_flip = true
 		pY += 25 * sqrt(3)
 	else:
 		tri = $Triangle.duplicate()
@@ -209,33 +204,49 @@ func hit_registered(array_coordinate):
 	if tri.get_strength() <= 0:
 		# destroy tri
 		remove_child(tri)
+		self.mass -= 1
 		grid[array_coordinate.y][array_coordinate.x] = false
 		
 		# remove destroyed node from graph
-		print(graph)
 		for coord in graph[hit_coord]:
 			var index = graph[coord].find(hit_coord)
 			graph[coord].remove(index)
 		
 		match len(graph[hit_coord]):
 			2:
-				# there could be 2 components from this unless the asteroid loops
 				var neighbors = graph[hit_coord]
 				graph.erase(hit_coord)
 				var components = []
+
 				for n in neighbors:
 					components.append(get_component(n))
-					
+
+				# check if there are 2 new asteroids from this
 				if not components[0].has(components[1][0]):
 					var	graphs = []
+					var component_positions = []
 					for coords in components:
 						var component_graph = {}
 						for coord in coords:
+							print(coord, graph[coord])
 							component_graph[coord] = graph[coord]
 						graphs.append(component_graph)
-					emit_signal("asteroid_break", graphs, global_hit_coord)
+						component_positions.append(
+							calulate_component_global_center(
+								component_graph
+							)
+						)
+					emit_signal("asteroid_break", 
+						graphs, 
+						component_positions,
+						rotation,
+						self.linear_velocity,
+						self.angular_velocity
+					)
+					tri.queue_free()
 					self.queue_free()
 			1: 
+				tri.queue_free()
 				graph.erase(hit_coord)
 			0:
 				# Lone tri
@@ -243,18 +254,24 @@ func hit_registered(array_coordinate):
 				if DEBUG:
 					print('asteroid all destroyed')
 
-#		var tmp_start_pos = self.global_position
-#		self.start_pos = tmp_start_pos
-#		self.reset = true
-#		update()
+func yx2xy(a):
+	return Vector2(a.y, a.x)
 
+func calulate_component_global_center(component):
+	var com = Vector2(0,0)
+
+	for c in component.keys():
+		com += coord_map[yx2xy(c)].global_position
+	
+	# the offset has to do with the grid coordinate?
+	return com / len(component) - Vector2(0, 25 * sqrt(3) / 2 + 5)
+	
 func get_component(start):
-	var q_front = graph[start]
+	var q_front = [start]
 	var visited = [start]
 	var neighbors = []
 	while q_front.size() > 0:
 		var front = q_front.pop_front()
-		# return the depth if it is the end key
 		neighbors = graph[front]
 		for n in neighbors: 
 			if not visited.has(n):
