@@ -41,8 +41,8 @@ func _draw():
 	coord_map = {}
 	draw_asteroid()
 	
-func _unhandled_input(event):
-	pass
+#func _unhandled_input(event):
+#	pass
 #	if event.is_action_pressed("ui_accept"):
 #		init_grid()
 #		update()
@@ -107,7 +107,7 @@ func init_grid():
 			break
 		
 		var dir = possible_dirs[randi() % len(possible_dirs)]
-		var prev_coord = Vector2(posY, posX)
+#		var prev_coord = Vector2(posY, posX)
 		match dir:
 			UP:
 				posY -= 1
@@ -196,10 +196,7 @@ func draw_triangle_at_centroid(y, x):
 func hit_registered(array_coordinate):
 	var tri:Triangle = coord_map[array_coordinate]
 	var hit_coord = Vector2(array_coordinate.y, array_coordinate.x)
-	var global_hit_coord = tri.global_position
 	tri.set_strength(tri.get_strength() - 2)
-	if DEBUG:
-		print(hit_coord, ", strength: ", tri.get_strength())
 	
 	if tri.get_strength() <= 0:
 		# destroy tri
@@ -264,7 +261,8 @@ func calulate_component_global_center(component):
 		com += coord_map[yx2xy(c)].global_position
 	
 	# the offset has to do with the grid coordinate?
-	return com / len(component) - Vector2(0, 25 * sqrt(3) / 2 + 5)
+	print(component, com / len(component))
+	return com / len(component) 
 	
 func get_component(start):
 	var q_front = [start]

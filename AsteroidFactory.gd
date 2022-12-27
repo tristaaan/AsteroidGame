@@ -30,18 +30,18 @@ func spawn(spawn_global_position, velocity = null, rot_velocity = null):
 	add_child(instance)
 	instance.reset = true
 	
-func asteroid_did_break(components, component_positions, rotation, velocity, angular_velocity):
-	print("factory detect broken", components)
+func asteroid_did_break(components, component_positions, rot, velocity, angular_velocity):
 	for i in components.size(): 
 		var c = components[i]
 		var c_pos = component_positions[i]
 		var instance = asteroid_scene.instance()
 		instance.init(c)
 		instance.start_pos = c_pos
-		instance.start_angle = rotation
+		instance.start_angle = rot
 		instance.start_speed = velocity
 		# this is a weird one to calculate
 		instance.start_rot = angular_velocity / 2
 		instance.connect("asteroid_break", self, "asteroid_did_break")
-		add_child(instance)
 		instance.reset = true
+		add_child(instance)
+		
