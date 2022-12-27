@@ -1,4 +1,4 @@
-extends Area2D
+extends KinematicBody2D
 
 export var speed = 400
 var screen_size
@@ -6,6 +6,7 @@ var screen_size
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	screen_size = get_viewport_rect().size
+	self.modulate = Color("#0000aa")
 
 func _process(delta):
 	var increment = 90

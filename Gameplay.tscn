@@ -15,12 +15,12 @@ current = true
 [node name="AsteroidFactory" type="Node2D" parent="."]
 script = ExtResource( 2 )
 
-[node name="Character" type="Area2D" parent="."]
+[node name="Character" type="KinematicBody2D" parent="."]
 position = Vector2( 518, 521 )
 script = ExtResource( 4 )
 
-[node name="Sprite" type="Sprite" parent="Character"]
-texture = ExtResource( 3 )
-
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="Character"]
 polygon = PoolVector2Array( 0, -20, -23, 21, 23, 21 )
+
+[node name="Sprite" type="Sprite" parent="Character"]
+texture = ExtResource( 3 )
