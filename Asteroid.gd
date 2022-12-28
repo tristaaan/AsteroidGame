@@ -3,7 +3,8 @@ extends RigidBody2D
 const size = 5
 const aster_size = 8
 
-signal asteroid_break(new_components)
+signal asteroid_break(components, component_positions, rot, velocity, angular_velocity, explode_origin)
+signal asteroid_chip(instance, component_position, explode_origin)
 export(PackedScene) var Explosion = preload("res://Explosion.tscn")
 
 var grid = []
@@ -41,7 +42,7 @@ func _integrate_forces(state):
 		state.linear_velocity = start_speed
 		state.angular_velocity = start_rot
 		reset = false
-		
+
 	if explosion:
 		self.apply_impulse(explosion_origin, explosion_velocity)
 		explosion = false
@@ -52,7 +53,7 @@ func _draw():
 	tris = []
 	coord_map = {}
 	draw_asteroid()
-	
+
 #func _unhandled_input(event):
 #	pass
 #	if event.is_action_pressed("ui_accept"):
@@ -89,8 +90,8 @@ func get_possible_directions(posX, posY):
 	else:
 		possible_dirs.append(LEFT)
 		possible_dirs.append(RIGHT)
-	return possible_dirs 
-	
+	return possible_dirs
+
 func empty_grid():
 	var ret = []
 	for i in size:
@@ -104,11 +105,11 @@ func init_grid():
 	# init the grid with false
 	grid = empty_grid()
 
-	# random walk the grid 
+	# random walk the grid
 	var posX = randi() % size
 	var posY = randi() % size
 	var mass_sum = 1
-	
+
 	grid[posY][posX] = true
 	graph[Vector2(posY, posX)] = []
 	for i in aster_size:
@@ -117,20 +118,20 @@ func init_grid():
 		if len(possible_dirs) == 0:
 			print("grid filled early")
 			break
-		
+
 		var dir = possible_dirs[randi() % len(possible_dirs)]
 #		var prev_coord = Vector2(posY, posX)
 		match dir:
 			UP:
 				posY -= 1
-			RIGHT: 
+			RIGHT:
 				posX += 1
-			DOWN: 
+			DOWN:
 				posY += 1
 			LEFT:
 				posX -= 1
 		grid[posY][posX] = true
-		
+
 		var adjacents = []
 		possible_dirs = get_possible_directions(posX, posY)
 		for pdir in possible_dirs:
@@ -138,16 +139,16 @@ func init_grid():
 				UP:
 					if grid[posY - 1][posX]:
 						adjacents.append(Vector2(posY - 1, posX))
-				RIGHT: 
+				RIGHT:
 					if grid[posY][posX + 1]:
 						adjacents.append(Vector2(posY, posX + 1))
-				DOWN: 
+				DOWN:
 					if grid[posY + 1][posX]:
 						adjacents.append(Vector2(posY + 1,posX))
 				LEFT:
 					if grid[posY][posX - 1]:
 						adjacents.append(Vector2(posY, posX - 1))
-		
+
 		# add reference to graph
 		var cur_coord = Vector2(posY, posX)
 		graph[cur_coord] = adjacents
@@ -157,7 +158,7 @@ func init_grid():
 		mass_sum += 1
 		if DEBUG:
 			print(graph)
-		
+
 	self.mass = mass_sum
 
 func draw_asteroid():
@@ -166,7 +167,7 @@ func draw_asteroid():
 	for t in graph.keys():
 		var com = draw_triangle_at_centroid(int(t.x), int(t.y))
 		center_of_mass_sum += com
-		
+
 	var center_of_mass = (center_of_mass_sum / len(graph))
 	self.transform.origin = center_of_mass
 	self.position = Vector2.ZERO
@@ -180,7 +181,7 @@ func draw_asteroid():
 	if DEBUG:
 		draw_circle(self.transform.origin, 5.0, Color("#ff00cc"))
 #	self.transform.origin = Vector2(0,0)
-	
+
 func draw_triangle_at_centroid(y, x):
 	var flip = (y % 2 == 0 and x % 2 == 1) || (y % 2 == 1 and x % 2 == 0)
 	var pX = x * 25
@@ -197,11 +198,11 @@ func draw_triangle_at_centroid(y, x):
 	tri.position = Vector2(pX, pY)
 	tris.append(tri)
 	coord_map[Vector2(x,y)] = tri
-	
+
 	var ret
 	if flip:
 		ret = Vector2(pX, pY - 25 * sqrt(3) + ((25 * sqrt(3)) / 2) - 5)
-	else: 
+	else:
 		ret = Vector2(pX, pY + (25 * sqrt(3)) / 2 + 5)
 	return ret
 
@@ -212,18 +213,18 @@ func hit_registered(array_coordinate):
 	var global_hit_coord = tri.global_position
 
 	tri.set_strength(tri.get_strength() - 2)
-	
+
 	if tri.get_strength() <= 0:
 		# destroy tri
 		remove_child(tri)
 		self.mass -= 1
 		grid[array_coordinate.y][array_coordinate.x] = false
-		
+
 		# remove destroyed node from graph
 		for coord in graph[hit_coord]:
 			var index = graph[coord].find(hit_coord)
 			graph[coord].remove(index)
-		
+
 		match len(graph[hit_coord]):
 			2:
 				var neighbors = graph[hit_coord]
@@ -240,7 +241,6 @@ func hit_registered(array_coordinate):
 					for coords in components:
 						var component_graph = {}
 						for coord in coords:
-							print(coord, graph[coord])
 							component_graph[coord] = graph[coord]
 						graphs.append(component_graph)
 						component_positions.append(
@@ -248,8 +248,8 @@ func hit_registered(array_coordinate):
 								component_graph
 							)
 						)
-					emit_signal("asteroid_break", 
-						graphs, 
+					emit_signal("asteroid_break",
+						graphs,
 						component_positions,
 						rotation,
 						self.linear_velocity,
@@ -258,19 +258,24 @@ func hit_registered(array_coordinate):
 					)
 					play_explosion_at(global_hit_coord, is_flip)
 					self.queue_free()
-			1: 
+			1:
 				play_explosion_at(global_hit_coord, is_flip)
+				emit_signal("asteroid_chip",
+					self,
+					calulate_component_global_center(graph),
+					global_hit_coord
+				)
 				tri.queue_free()
 				graph.erase(hit_coord)
 #				var new_com = calulate_component_global_center(graph)
 #				self.transform.origin = new_com
 			0:
-				# Lone tri was destroyed				
+				# Lone tri was destroyed
 				play_explosion_at(global_hit_coord, is_flip)
 				self.queue_free()
 				if DEBUG:
 					print('asteroid all destroyed')
-		
+
 func play_explosion_at(pos, is_flip):
 	var explosion_emitter = Explosion.instance()
 	get_parent().add_child(explosion_emitter)
@@ -287,9 +292,9 @@ func calulate_component_global_center(component):
 
 	for c in component.keys():
 		com += coord_map[yx2xy(c)].global_position
-	
-	return com / len(component) 
-	
+
+	return com / len(component)
+
 func get_component(start):
 	var q_front = [start]
 	var visited = [start]
@@ -297,13 +302,13 @@ func get_component(start):
 	while q_front.size() > 0:
 		var front = q_front.pop_front()
 		neighbors = graph[front]
-		for n in neighbors: 
+		for n in neighbors:
 			if not visited.has(n):
 				q_front.append(n)
 		visited.append(front)
 
 	return visited
-	
+
 # in the future this could take damange depending on weapon :)
 func hit_by_bullet(body_index):
 	var tri:Triangle = get_child(body_index)

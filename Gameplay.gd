@@ -8,7 +8,7 @@ func _ready():
 
 func setup_asteroid_field():
 	var screen_size = self.get_viewport().get_visible_rect().size
-	
+
 	spawn_asteroid_at(100, 250, Vector2(0, 0), 0.5)
 	spawn_asteroid_at(700, 150, Vector2(0, -0), 0)
 	spawn_asteroid_at(400, 250, Vector2(-0, 0), 0)

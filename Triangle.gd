@@ -15,7 +15,7 @@ func _ready():
 #func _input(event):
 #	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT and event.pressed:
 #		var inside = Geometry.is_point_in_polygon(
-#			to_local(event.position), 
+#			to_local(event.position),
 #			self.polygon
 #		)
 #		if inside:
@@ -25,11 +25,11 @@ func set_initial_strength(newVal):
 	initial_str = newVal
 	strength = initial_str
 	modulate = Color(1.0, 1.0, 1.0)
-		
+
 func set_strength(newVal):
 	strength = newVal
 	modulate = Color(1.0, strength / initial_str, strength / initial_str)
-	
+
 func get_strength():
 	return strength
 

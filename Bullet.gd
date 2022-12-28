@@ -4,12 +4,12 @@ export(int) var bulletSpeed = -180
 
 func _ready():
 	set_as_toplevel(true)
-	
+
 func _process(delta):
 	if is_outside_view_bounds():
 		queue_free()
 	move_local_y(delta * bulletSpeed)
-	
+
 #outside bounds calculation
 func is_outside_view_bounds():
 	return position.x>OS.get_screen_size().x or position.x<0.0\
