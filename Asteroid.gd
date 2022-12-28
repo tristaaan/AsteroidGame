@@ -22,9 +22,11 @@ var explosion = false
 var explosion_velocity = null
 var explosion_origin = null
 
-var DEBUG = true
+var DEBUG = false
 
 enum {UP=0, RIGHT=1, DOWN=2, LEFT=3}
+
+class_name Asteroid
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -270,12 +272,12 @@ func hit_registered(array_coordinate):
 					print('asteroid all destroyed')
 		
 func play_explosion_at(pos, is_flip):
-	var explosion = Explosion.instance()
-	get_parent().add_child(explosion)
+	var explosion_emitter = Explosion.instance()
+	get_parent().add_child(explosion_emitter)
 	if is_flip:
-		explosion.global_position = pos - Vector2(0, 25 * sqrt(3) / 2 - 5)
+		explosion_emitter.global_position = pos - Vector2(0, 25 * sqrt(3) / 2 - 5)
 	else:
-		explosion.global_position = pos + Vector2(0, 25 * sqrt(3) / 2 + 5)
+		explosion_emitter.global_position = pos + Vector2(0, 25 * sqrt(3) / 2 + 5)
 
 func yx2xy(a):
 	return Vector2(a.y, a.x)
