@@ -51,4 +51,9 @@ func trigger_explosion(instance, c_pos, explode_origin):
 	instance.explosion = true
 	instance.explosion_origin = explode_origin
 	# the magnitude of the explosion vector should be proportional to the distance to origin?
-	instance.explosion_velocity = Util.break_explosion_velocity(c_pos, explode_origin)
+	instance.explosion_velocity = Util.break_explosion_velocity(
+		c_pos,
+		explode_origin,
+		instance.rotation,
+		instance.global_transform.origin
+	)

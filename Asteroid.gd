@@ -259,15 +259,19 @@ func hit_registered(array_coordinate):
 					self.queue_free()
 			1:
 				play_explosion_at(global_hit_coord, is_flip)
-				var c_pos = coord_map[yx2xy(graph[hit_coord][0])].global_position
+				var neighbor_tri = coord_map[yx2xy(graph[hit_coord][0])]
+				var c_pos = true_coord(neighbor_tri)
 				self.apply_impulse(
 					c_pos,
-					Util.break_explosion_velocity(c_pos, global_hit_coord)
+					Util.break_explosion_velocity(
+						c_pos,
+						adjust_coord(global_hit_coord, is_flip),
+						self.rotation,
+						self.global_transform.origin
+					)
 				)
 				tri.queue_free()
 				graph.erase(hit_coord)
-#				var new_com = calulate_component_global_center(graph)
-#				self.transform.origin = new_com
 			0:
 				# Lone tri was destroyed
 				play_explosion_at(global_hit_coord, is_flip)
@@ -278,10 +282,15 @@ func hit_registered(array_coordinate):
 func play_explosion_at(pos, is_flip):
 	var explosion_emitter = Explosion.instance()
 	get_parent().add_child(explosion_emitter)
+	explosion_emitter.global_position = adjust_coord(pos, is_flip)
+
+func true_coord(tri):
+	return adjust_coord(tri.global_position, tri.is_flip)
+
+func adjust_coord(vec2, is_flip):
 	if is_flip:
-		explosion_emitter.global_position = pos - Vector2(0, 25 * sqrt(3) / 2 - 5)
-	else:
-		explosion_emitter.global_position = pos + Vector2(0, 25 * sqrt(3) / 2 + 5)
+		return vec2 - Vector2(0, 25 * sqrt(3) / 2 - 5)
+	return vec2 + Vector2(0, 25 * sqrt(3) / 2 + 5)
 
 func yx2xy(a):
 	return Vector2(a.y, a.x)
