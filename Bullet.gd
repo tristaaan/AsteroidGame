@@ -15,8 +15,7 @@ func is_outside_view_bounds():
 	return position.x>OS.get_screen_size().x or position.x<0.0\
 		or position.y>OS.get_screen_size().y or position.y<0.0
 
-func _on_Bullet_body_entered(body):
-	print(body)
+func _on_Bullet_body_shape_entered(body_rid, body, body_shape_index, local_shape_index):
 	if body.get_collision_layer_bit(0):
-		body.hit_by_bullet()
+		body.hit_by_bullet(body_shape_index)
 	queue_free()

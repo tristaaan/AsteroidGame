@@ -288,5 +288,7 @@ func get_component(start):
 
 	return visited
 	
-func hit_by_bullet():
-	print('hit!')
+# in the future this could take damange depending on weapon :)
+func hit_by_bullet(body_index):
+	var tri:Triangle = get_child(body_index)
+	hit_registered(tri.array_coordinate)
