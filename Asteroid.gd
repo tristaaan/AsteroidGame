@@ -4,6 +4,7 @@ const size = 5
 const aster_size = 8
 
 signal asteroid_break(new_components)
+export(PackedScene) var Explosion = preload("res://Explosion.tscn")
 
 var grid = []
 var tris = []
@@ -185,6 +186,7 @@ func draw_triangle_at_centroid(y, x):
 	var tri
 	if flip:
 		tri = $TriangleFlip.duplicate()
+		tri.is_flip = true
 		pY += 25 * sqrt(3)
 	else:
 		tri = $Triangle.duplicate()
@@ -204,7 +206,9 @@ func draw_triangle_at_centroid(y, x):
 func hit_registered(array_coordinate):
 	var tri:Triangle = coord_map[array_coordinate]
 	var hit_coord = Vector2(array_coordinate.y, array_coordinate.x)
+	var is_flip = tri.is_flip
 	var global_hit_coord = tri.global_position
+
 	tri.set_strength(tri.get_strength() - 2)
 	
 	if tri.get_strength() <= 0:
@@ -250,18 +254,28 @@ func hit_registered(array_coordinate):
 						self.angular_velocity,
 						global_hit_coord
 					)
-					tri.queue_free()
+					play_explosion_at(global_hit_coord, is_flip)
 					self.queue_free()
 			1: 
+				play_explosion_at(global_hit_coord, is_flip)
 				tri.queue_free()
 				graph.erase(hit_coord)
-				var new_com = calulate_component_global_center(graph)
-				self.transform.origin = new_com
+#				var new_com = calulate_component_global_center(graph)
+#				self.transform.origin = new_com
 			0:
-				# Lone tri was destroyed
+				# Lone tri was destroyed				
+				play_explosion_at(global_hit_coord, is_flip)
 				self.queue_free()
 				if DEBUG:
 					print('asteroid all destroyed')
+		
+func play_explosion_at(pos, is_flip):
+	var explosion = Explosion.instance()
+	get_parent().add_child(explosion)
+	if is_flip:
+		explosion.global_position = pos - Vector2(0, 25 * sqrt(3) / 2 - 5)
+	else:
+		explosion.global_position = pos + Vector2(0, 25 * sqrt(3) / 2 + 5)
 
 func yx2xy(a):
 	return Vector2(a.y, a.x)
