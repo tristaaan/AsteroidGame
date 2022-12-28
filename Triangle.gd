@@ -12,14 +12,14 @@ class_name Triangle
 func _ready():
 	strength = initial_str
 
-#func _input(event):
-#	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT and event.pressed:
-#		var inside = Geometry.is_point_in_polygon(
-#			to_local(event.position),
-#			self.polygon
-#		)
-#		if inside:
-#			emit_signal("hit", array_coordinate)
+func _input(event):
+	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT and event.pressed:
+		var inside = Geometry.is_point_in_polygon(
+			to_local(event.position),
+			self.polygon
+		)
+		if inside:
+			emit_signal("hit", array_coordinate)
 
 func set_initial_strength(newVal):
 	initial_str = newVal

@@ -18,10 +18,16 @@ _global_script_classes=[ {
 "class": "Triangle",
 "language": "GDScript",
 "path": "res://Triangle.gd"
+}, {
+"base": "Object",
+"class": "Util",
+"language": "GDScript",
+"path": "res://util.gd"
 } ]
 _global_script_class_icons={
 "Asteroid": "",
-"Triangle": ""
+"Triangle": "",
+"Util": ""
 }
 
 [application]

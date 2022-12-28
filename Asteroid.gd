@@ -4,7 +4,6 @@ const size = 5
 const aster_size = 8
 
 signal asteroid_break(components, component_positions, rot, velocity, angular_velocity, explode_origin)
-signal asteroid_chip(instance, component_position, explode_origin)
 export(PackedScene) var Explosion = preload("res://Explosion.tscn")
 
 var grid = []
@@ -260,10 +259,10 @@ func hit_registered(array_coordinate):
 					self.queue_free()
 			1:
 				play_explosion_at(global_hit_coord, is_flip)
-				emit_signal("asteroid_chip",
-					self,
-					calulate_component_global_center(graph),
-					global_hit_coord
+				var c_pos = coord_map[yx2xy(graph[hit_coord][0])].global_position
+				self.apply_impulse(
+					c_pos,
+					Util.break_explosion_velocity(c_pos, global_hit_coord)
 				)
 				tri.queue_free()
 				graph.erase(hit_coord)

@@ -42,16 +42,13 @@ func asteroid_did_break(components, component_positions, rot, velocity, angular_
 		# this is a weird one to calculate
 		instance.start_rot = angular_velocity / 2
 		instance.connect("asteroid_break", self, "asteroid_did_break")
-		instance.connect("asteroid_chip", self, "asteroid_did_chip")
 		add_child(instance)
 		instance.reset = true
 
-		instance.explosion = true
-		instance.explosion_origin = explode_origin
-		instance.explosion_velocity = -(c_pos - explode_origin) / 5
+		trigger_explosion(instance, c_pos, explode_origin)
 
-func asteroid_did_chip(instance, component_position, explode_origin):
-	print(component_position, explode_origin)
+func trigger_explosion(instance, c_pos, explode_origin):
 	instance.explosion = true
 	instance.explosion_origin = explode_origin
-	instance.explosion_velocity = -(component_position - explode_origin) / 5
+	# the magnitude of the explosion vector should be proportional to the distance to origin?
+	instance.explosion_velocity = Util.break_explosion_velocity(c_pos, explode_origin)
