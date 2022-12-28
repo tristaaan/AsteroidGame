@@ -288,3 +288,5 @@ func get_component(start):
 
 	return visited
 	
+func hit_by_bullet():
+	print('hit!')

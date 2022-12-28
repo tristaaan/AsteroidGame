@@ -3,6 +3,8 @@ extends KinematicBody2D
 export var speed = 400
 var screen_size
 
+onready var Bullet = preload("res://Bullet.tscn")
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	screen_size = get_viewport_rect().size
@@ -28,6 +30,13 @@ func _process(delta):
 	if Input.is_action_pressed('joy_up') or Input.is_action_pressed('joy_down'):
 		velocity.y += Input.get_axis("joy_up", "joy_down") * increment
 	
+	# fire bullets
+	if Input.is_action_just_pressed("action_shoot"):
+		var bullet =  Bullet.instance()
+		get_parent().add_child(bullet)
+		bullet.global_position = self.global_position - Vector2(0, (25 * sqrt(3)) / 2 + 2)
+	
+	# process movement
 	position += velocity * delta
 	position.x = clamp(position.x, 0, screen_size.x)
 	position.y = clamp(position.y, 0, screen_size.y)
