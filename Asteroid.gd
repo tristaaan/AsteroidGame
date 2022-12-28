@@ -2,6 +2,7 @@ extends RigidBody2D
 
 const size = 5
 const aster_size = 8
+const base_mass = 5
 
 signal asteroid_break(components, component_positions, rot, velocity, angular_velocity, explode_origin)
 export(PackedScene) var Explosion = preload("res://Explosion.tscn")
@@ -65,7 +66,7 @@ func init(starter_graph):
 	grid = empty_grid()
 	for k in graph.keys():
 		grid[k.x][k.y] = true
-	self.mass = len(graph)
+	self.mass = len(graph) * base_mass
 
 func get_possible_directions(posX, posY):
 	var possible_dirs = []
@@ -158,7 +159,7 @@ func init_grid():
 		if DEBUG:
 			print(graph)
 
-	self.mass = mass_sum
+	self.mass = mass_sum * base_mass
 
 func draw_asteroid():
 	var center_of_mass_sum = Vector2(0,0)
@@ -216,7 +217,7 @@ func hit_registered(array_coordinate):
 	if tri.get_strength() <= 0:
 		# destroy tri
 		remove_child(tri)
-		self.mass -= 1
+		self.mass -= base_mass
 		grid[array_coordinate.y][array_coordinate.x] = false
 
 		# remove destroyed node from graph
