@@ -19,6 +19,7 @@ var start_pos = Vector2(0, 0)
 var start_speed = Vector2(0, 0)
 var start_rot = 0
 
+# particle effects
 var explosion = false
 var explosion_velocity = null
 var explosion_origin = null

@@ -2,7 +2,12 @@ extends Node2D
 
 export(PackedScene) var asteroid_scene = preload("res://Asteroid.tscn")
 
-const speed_bounds = 10
+const x_speed_bounds = 10
+const y_speed_bound_min = 50
+const y_speed_bound_max = 100
+
+const rot_bounds = 0.75
+
 var rng = RandomNumberGenerator.new()
 
 func spawn(spawn_global_position, velocity = null, rot_velocity = null):
@@ -12,14 +17,14 @@ func spawn(spawn_global_position, velocity = null, rot_velocity = null):
 	# set velocity vector
 	if velocity == null:
 		instance.start_speed = Vector2(
-			rng.randf_range(-speed_bounds, speed_bounds),
-			rng.randf_range(-speed_bounds, speed_bounds)
+			rng.randf_range(-x_speed_bounds, x_speed_bounds),
+			rng.randf_range(y_speed_bound_min, y_speed_bound_max)
 		)
 	else:
 		instance.start_speed = velocity
 	# set rotation speed
 	if rot_velocity == null:
-		instance.start_rot = rng.randf_range(-2, 2)
+		instance.start_rot = rng.randf_range(-rot_bounds, rot_bounds)
 	else:
 		instance.start_rot = rot_velocity
 
@@ -57,3 +62,12 @@ func trigger_explosion(instance, c_pos, explode_origin):
 		instance.rotation,
 		instance.global_transform.origin
 	)
+
+func get_asteroid_count():
+	var count = 0
+	var children = self.get_children()
+	for c in children:
+		if c is Asteroid:
+			count += 1
+
+	return count
