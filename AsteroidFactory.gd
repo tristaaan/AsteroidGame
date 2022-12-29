@@ -35,12 +35,12 @@ func spawn(spawn_global_position, velocity = null, rot_velocity = null):
 	add_child(instance)
 	instance.reset = true
 
-func asteroid_did_break(components, component_positions, rot, velocity, angular_velocity, neighbors, explode_origin):
+func asteroid_did_break(components, component_positions, component_strengths, rot, velocity,
+angular_velocity, neighbors, explode_origin):
 	for i in components.size():
-		var c = components[i]
 		var c_pos = component_positions[i]
 		var instance = asteroid_scene.instance()
-		instance.init(c)
+		instance.init(components[i], component_strengths[i])
 		instance.start_pos = c_pos
 		instance.start_angle = rot
 		instance.start_speed = velocity

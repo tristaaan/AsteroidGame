@@ -16,7 +16,7 @@ func setup_debug_asteroid_field():
 	spawn_asteroid_at(400, 250, Vector2(-0, 0), 0)
 
 func setup_asteroid_field():
-	while $AsteroidFactory.get_asteroid_count() < max_count:
+	while $AsteroidFactory.get_child_count() < max_count:
 		spawn_asteroid_random()
 
 func spawn_asteroid_random():

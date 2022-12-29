@@ -11,6 +11,7 @@ var grid = []
 var tris = []
 var coord_map = {}
 var graph = {}
+var strength_map = {}
 
 # variables and flags to setup
 var reset = false
@@ -55,8 +56,9 @@ func _draw():
 	coord_map = {}
 	draw_asteroid()
 
-func init(starter_graph):
+func init(starter_graph, init_strength_map):
 	graph = starter_graph
+	strength_map = init_strength_map
 	grid = empty_grid()
 	for k in graph.keys():
 		grid[k.x][k.y] = true
@@ -187,11 +189,15 @@ func draw_triangle_at_centroid(y, x):
 		pY += 25 * sqrt(3)
 	else:
 		tri = $Triangle.duplicate()
+	var coord_key = Vector2(x,y)
+
+	if strength_map.has(coord_key):
+		tri.set_strength(strength_map[coord_key])
 	tri.array_coordinate = Vector2(x,y)
 	tri.connect("hit", self, "hit_registered")
 	tri.position = Vector2(pX, pY)
 	tris.append(tri)
-	coord_map[Vector2(x,y)] = tri
+	coord_map[coord_key] = tri
 
 	var ret
 	if flip:
@@ -236,11 +242,15 @@ func hit_registered(array_coordinate):
 				if not components[0].has(components[1][0]):
 					var	graphs = []
 					var component_positions = []
+					var component_strengths = []
 					for coords in components:
 						var component_graph = {}
+						var component_strength = {}
 						for coord in coords:
 							component_graph[coord] = graph[coord]
+							component_strength[yx2xy(coord)] = coord_map[yx2xy(coord)].strength
 						graphs.append(component_graph)
+						component_strengths.append(component_strength)
 						component_positions.append(
 							calulate_component_global_center(
 								component_graph
@@ -249,6 +259,7 @@ func hit_registered(array_coordinate):
 					emit_signal("asteroid_break",
 						graphs,
 						component_positions,
+						component_strengths,
 						rotation,
 						self.linear_velocity,
 						self.angular_velocity,

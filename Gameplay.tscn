@@ -13,6 +13,7 @@ anchor_mode = 0
 current = true
 
 [node name="AsteroidFactory" type="Node2D" parent="."]
+position = Vector2( 492, -155 )
 script = ExtResource( 2 )
 
 [node name="Character" type="KinematicBody2D" parent="."]
