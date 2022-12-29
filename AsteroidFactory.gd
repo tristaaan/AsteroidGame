@@ -35,7 +35,7 @@ func spawn(spawn_global_position, velocity = null, rot_velocity = null):
 	add_child(instance)
 	instance.reset = true
 
-func asteroid_did_break(components, component_positions, rot, velocity, angular_velocity, explode_origin):
+func asteroid_did_break(components, component_positions, rot, velocity, angular_velocity, neighbors, explode_origin):
 	for i in components.size():
 		var c = components[i]
 		var c_pos = component_positions[i]
@@ -50,24 +50,15 @@ func asteroid_did_break(components, component_positions, rot, velocity, angular_
 		add_child(instance)
 		instance.reset = true
 
-		trigger_explosion(instance, c_pos, explode_origin)
+		trigger_explosion(instance, neighbors[i], explode_origin)
 
-func trigger_explosion(instance, c_pos, explode_origin):
+func trigger_explosion(instance, neighbor_coord, explode_origin):
 	instance.explosion = true
 	instance.explosion_origin = explode_origin
 	# the magnitude of the explosion vector should be proportional to the distance to origin?
 	instance.explosion_velocity = Util.break_explosion_velocity(
-		c_pos,
+		neighbor_coord,
 		explode_origin,
 		instance.rotation,
-		instance.global_transform.origin
+		Vector2(0,0)
 	)
-
-func get_asteroid_count():
-	var count = 0
-	var children = self.get_children()
-	for c in children:
-		if c is Asteroid:
-			count += 1
-
-	return count

@@ -55,13 +55,6 @@ func _draw():
 	coord_map = {}
 	draw_asteroid()
 
-#func _unhandled_input(event):
-#	pass
-#	if event.is_action_pressed("ui_accept"):
-#		init_grid()
-#		update()
-#		draw_asteroid()
-
 func init(starter_graph):
 	graph = starter_graph
 	grid = empty_grid()
@@ -233,9 +226,11 @@ func hit_registered(array_coordinate):
 				var neighbors = graph[hit_coord]
 				graph.erase(hit_coord)
 				var components = []
+				var neighbor_coords = []
 
 				for n in neighbors:
 					components.append(get_component(n))
+					neighbor_coords.append(coord_map[yx2xy(n)].position)
 
 				# check if there are 2 new asteroids from this
 				if not components[0].has(components[1][0]):
@@ -257,7 +252,8 @@ func hit_registered(array_coordinate):
 						rotation,
 						self.linear_velocity,
 						self.angular_velocity,
-						global_hit_coord
+						neighbor_coords,
+						local_hit_coord
 					)
 					play_explosion_at(global_hit_coord, is_flip)
 					self.queue_free()

@@ -6,7 +6,7 @@ const DEBUG = false
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	if DEBUG:
-		setup_asteroid_field()
+		setup_debug_asteroid_field()
 	else:
 		setup_asteroid_field()
 
@@ -29,7 +29,6 @@ func spawn_asteroid_random():
 	spawn_asteroid_at(x,y)
 
 func spawn_asteroid_at(x, y, velocity = null, rot_velocity=null):
-	print("spawned at", x, y)
 	$AsteroidFactory.spawn(Vector2(x,y), velocity, rot_velocity)
 
 func _on_AsteroidDespawnerArea_body_entered(body):
@@ -38,5 +37,5 @@ func _on_AsteroidDespawnerArea_body_entered(body):
 
 	if body is Asteroid:
 		body.queue_free()
-		if $AsteroidFactory.get_asteroid_count() < max_count:
+		if $AsteroidFactory.get_child_count() < max_count:
 			spawn_asteroid_random()
