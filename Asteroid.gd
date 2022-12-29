@@ -211,7 +211,9 @@ func hit_registered(array_coordinate):
 	var tri:Triangle = coord_map[array_coordinate]
 	var hit_coord = Vector2(array_coordinate.y, array_coordinate.x)
 	var is_flip = tri.is_flip
+
 	var global_hit_coord = tri.global_position
+	var local_hit_coord = adjust_coord(tri.position, is_flip)
 
 	tri.set_strength(tri.get_strength() - 2)
 
@@ -261,16 +263,16 @@ func hit_registered(array_coordinate):
 					self.queue_free()
 			1:
 				play_explosion_at(global_hit_coord, is_flip)
-				var neighbor_tri = coord_map[yx2xy(graph[hit_coord][0])]
-				var c_pos = true_coord(neighbor_tri)
+				var neighbor_pos = true_coord(coord_map[yx2xy(graph[hit_coord][0])])
+				var impulse = Util.break_explosion_velocity(
+					neighbor_pos,
+					local_hit_coord,
+					self.rotation,
+					Vector2(0,0)
+				)
 				self.apply_impulse(
-					c_pos,
-					Util.break_explosion_velocity(
-						c_pos,
-						adjust_coord(global_hit_coord, is_flip),
-						self.rotation,
-						self.global_transform.origin
-					)
+					local_hit_coord,
+					impulse
 				)
 				tri.queue_free()
 				graph.erase(hit_coord)
@@ -280,6 +282,8 @@ func hit_registered(array_coordinate):
 				self.queue_free()
 				if DEBUG:
 					print('asteroid all destroyed')
+			_:
+				print("impossible case, did you click away the tri?")
 
 func play_explosion_at(pos, is_flip):
 	var explosion_emitter = Explosion.instance()
@@ -287,14 +291,21 @@ func play_explosion_at(pos, is_flip):
 	explosion_emitter.global_position = adjust_coord(pos, is_flip)
 
 func true_coord(tri):
-	return adjust_coord(tri.global_position, tri.is_flip)
+	return adjust_coord(tri.position, tri.is_flip)
 
 func adjust_coord(vec2, is_flip):
 	if is_flip:
-		return vec2 - Vector2(0, 25 * sqrt(3) / 2 - 5)
-	return vec2 + Vector2(0, 25 * sqrt(3) / 2 + 5)
+		return vec2 - magic_offset(is_flip)
+	return vec2 + magic_offset(is_flip)
+
+func magic_offset(is_flip):
+	# calculate the center offset of a tri
+	if is_flip:
+		return Vector2(0, 25 * sqrt(3) / 2 - 5).rotated(self.rotation)
+	return Vector2(0, 25 * sqrt(3) / 2 + 5).rotated(self.rotation)
 
 func yx2xy(a):
+	# flip the coordinates of a vector
 	return Vector2(a.y, a.x)
 
 func calulate_component_global_center(component):

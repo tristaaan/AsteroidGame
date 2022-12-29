@@ -7,7 +7,7 @@ static func distance(a,b):
 
 static func break_explosion_velocity(c_pos, explode_origin, aster_rotation, aster_origin):
 	explode_origin = rotate_around(explode_origin, aster_rotation, aster_origin)
-	return c_pos-explode_origin # * (distance(c_pos, explode_origin) / 10)
+	return (c_pos - explode_origin) * 10
 
 static func rotate_around(pt, theta, center):
 	var cx = center.x;
