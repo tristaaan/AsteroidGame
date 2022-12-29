@@ -32,7 +32,7 @@ func spawn_asteroid_at(x, y, velocity = null, rot_velocity=null):
 	print("spawned at", x, y)
 	$AsteroidFactory.spawn(Vector2(x,y), velocity, rot_velocity)
 
-func _on_ValidAsteroidArea_body_exited(body):
+func _on_AsteroidDespawnerArea_body_entered(body):
 	if not is_instance_valid(body):
 		return
 
@@ -40,5 +40,3 @@ func _on_ValidAsteroidArea_body_exited(body):
 		body.queue_free()
 		if $AsteroidFactory.get_asteroid_count() < max_count:
 			spawn_asteroid_random()
-
-	print(OS.get_unix_time(), " a:", $AsteroidFactory.get_asteroid_count())

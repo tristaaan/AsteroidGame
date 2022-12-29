@@ -1,12 +1,9 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://Gameplay.gd" type="Script" id=1]
 [ext_resource path="res://AsteroidFactory.gd" type="Script" id=2]
 [ext_resource path="res://triangle.svg" type="Texture" id=3]
 [ext_resource path="res://Character.gd" type="Script" id=4]
-
-[sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 579, 481 )
 
 [node name="Gameplay" type="Node2D"]
 script = ExtResource( 1 )
@@ -28,11 +25,12 @@ polygon = PoolVector2Array( 0, -20, -23, 21, 23, 21 )
 [node name="Sprite" type="Sprite" parent="Character"]
 texture = ExtResource( 3 )
 
-[node name="ValidAsteroidArea" type="Area2D" parent="."]
+[node name="AsteroidDespawnerArea" type="Area2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ValidAsteroidArea"]
-position = Vector2( 496, 186 )
-shape = SubResource( 1 )
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="AsteroidDespawnerArea"]
+position = Vector2( 500, 369 )
+build_mode = 1
+polygon = PoolVector2Array( -552, 351, 580, 360, 580, -677, -637, -686, 656, -731, 629, 432, -597, 436, -579, -735 )
 
 [node name="RightMaxSpawn" type="Position2D" parent="."]
 position = Vector2( 0, -255 )
@@ -40,4 +38,4 @@ position = Vector2( 0, -255 )
 [node name="LeftMaxSpawn" type="Position2D" parent="."]
 position = Vector2( 1020, -255 )
 
-[connection signal="body_exited" from="ValidAsteroidArea" to="." method="_on_ValidAsteroidArea_body_exited"]
+[connection signal="body_entered" from="AsteroidDespawnerArea" to="." method="_on_AsteroidDespawnerArea_body_entered"]
